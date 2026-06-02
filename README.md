@@ -2,8 +2,6 @@
 
 VSCode extension that tracks [Claude Code](https://claude.com/claude-code) token usage and cost in real time, with accurate per-model pricing.
 
-![Status bar preview](install.png)
-
 ## Features
 
 - **Live status bar** — current session cost, weekly cost, % of plan limit
