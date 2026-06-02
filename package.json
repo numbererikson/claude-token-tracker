@@ -3,7 +3,7 @@
   "displayName": "Claude Token Tracker",
   "description": "Tracks Claude Code token usage with accurate per-model pricing (Opus/Sonnet/Haiku 4.x), 5m/1h cache tier, 1M context doubling, web_search billing",
   "version": "0.1.0",
-  "publisher": "shinobiapps",
+  "publisher": "shinobi-apps",
   "engines": {
     "vscode": "^1.85.0"
   },

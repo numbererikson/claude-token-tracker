@@ -102,17 +102,17 @@ function activate(context) {
 
     costBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 10000);
     costBarItem.command = 'claudeTokenTracker.showHistory';
-    costBarItem.tooltip = 'API cost equivalent (klik za sve sesije)';
+    costBarItem.tooltip = 'API cost equivalent (click for all sessions)';
     context.subscriptions.push(costBarItem);
 
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 9999);
     statusBarItem.command = 'claudeTokenTracker.showDashboard';
-    statusBarItem.tooltip = 'Tokeni aktivnih konverzacija (klik za dashboard)';
+    statusBarItem.tooltip = 'Tokens in active conversations (click for dashboard)';
     context.subscriptions.push(statusBarItem);
 
     usageBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 9998);
     usageBarItem.command = 'claudeTokenTracker.showDashboard';
-    usageBarItem.tooltip = 'Klik za dashboard';
+    usageBarItem.tooltip = 'Click for dashboard';
     context.subscriptions.push(usageBarItem);
 
     context.subscriptions.push(
@@ -161,7 +161,7 @@ function loadCalibration() {
             LIMITS.sessionCycleAnchor = new Date(data.sessionCycleAnchor);
             recalcSessionResetTime();
         }
-        outputChannel.appendLine(`[Calibration] Loaded: session=$${LIMITS.sessionCostLimit}, weekly=$${LIMITS.weeklyCostLimit}, sub=$${LIMITS.monthlySubCost}/mj`);
+        outputChannel.appendLine(`[Calibration] Loaded: session=$${LIMITS.sessionCostLimit}, weekly=$${LIMITS.weeklyCostLimit}, sub=$${LIMITS.monthlySubCost}/mo`);
     } catch (e) { /* use defaults */ }
 }
 
@@ -183,34 +183,34 @@ function saveCalibration() {
 
 async function calibrateUsage() {
     const sessionPct = await vscode.window.showInputBox({
-        title: 'Claude Kalibracija (1/4)',
-        prompt: 'claude.ai/settings → Usage → Session % (npr. 13). Enter za preskočiti.',
+        title: 'Claude Calibration (1/4)',
+        prompt: 'claude.ai/settings → Usage → Session % (e.g. 13). Press Enter to skip.',
         placeHolder: '13', ignoreFocusOut: true,
-        validateInput: v => !v ? null : (parseFloat(v) >= 0 && parseFloat(v) <= 100 ? null : 'Broj 0-100')
+        validateInput: v => !v ? null : (parseFloat(v) >= 0 && parseFloat(v) <= 100 ? null : 'Number 0-100')
     });
     if (sessionPct === undefined) return;
 
     const resetsIn = await vscode.window.showInputBox({
-        title: 'Claude Kalibracija (2/4)',
-        prompt: 'Session "Resets in" (npr. 4h15m, 4:15, ili 255 za minute). Enter za preskočiti.',
+        title: 'Claude Calibration (2/4)',
+        prompt: 'Session "Resets in" (e.g. 4h15m, 4:15, or 255 for minutes). Press Enter to skip.',
         placeHolder: '4h15m', ignoreFocusOut: true,
-        validateInput: v => !v ? null : (parseResetTime(v) !== null ? null : 'Format: 4h15m, 4:15, ili 255')
+        validateInput: v => !v ? null : (parseResetTime(v) !== null ? null : 'Format: 4h15m, 4:15, or 255')
     });
     if (resetsIn === undefined) return;
 
     const weeklyPct = await vscode.window.showInputBox({
-        title: 'Claude Kalibracija (3/4)',
-        prompt: 'Weekly % (npr. 45). Enter za preskočiti.',
+        title: 'Claude Calibration (3/4)',
+        prompt: 'Weekly % (e.g. 45). Press Enter to skip.',
         placeHolder: '45', ignoreFocusOut: true,
-        validateInput: v => !v ? null : (parseFloat(v) >= 0 && parseFloat(v) <= 100 ? null : 'Broj 0-100')
+        validateInput: v => !v ? null : (parseFloat(v) >= 0 && parseFloat(v) <= 100 ? null : 'Number 0-100')
     });
     if (weeklyPct === undefined) return;
 
     const subCost = await vscode.window.showInputBox({
-        title: 'Claude Kalibracija (4/4)',
-        prompt: 'Mjesečna cijena pretplate u $ (100 za Max, 200 za Max 5x). Enter za preskočiti.',
+        title: 'Claude Calibration (4/4)',
+        prompt: 'Monthly subscription cost in $ (100 for Max, 200 for Max 5x). Press Enter to skip.',
         placeHolder: String(LIMITS.monthlySubCost), ignoreFocusOut: true,
-        validateInput: v => !v ? null : (parseFloat(v) > 0 ? null : 'Pozitivan broj')
+        validateInput: v => !v ? null : (parseFloat(v) > 0 ? null : 'Positive number')
     });
     if (subCost === undefined) return;
 
@@ -367,8 +367,8 @@ function findAndWatchSessions() {
 
     if (newSessionFound && hadSessions) {
         vscode.window.showInformationMessage(
-            `Nova Claude sesija (${activeSessions.size} aktivnih). Kalibrirati?`, 'Da', 'Ne'
-        ).then(c => { if (c === 'Da') calibrateUsage(); });
+            `New Claude session (${activeSessions.size} active). Calibrate?`, 'Yes', 'No'
+        ).then(c => { if (c === 'Yes') calibrateUsage(); });
     }
 
     for (const [sid] of activeSessions) parseOneSession(sid);
@@ -613,10 +613,10 @@ function recalculateWindows() {
     const sessionPct = LIMITS.sessionCostLimit > 0 ? (session.cost / LIMITS.sessionCostLimit) * 100 : 0;
     if (sessionPct >= 95 && !notified95) {
         notified95 = true;
-        vscode.window.showWarningMessage(`Claude session usage ~${Math.round(sessionPct)}%! Blizu rate limita.`);
+        vscode.window.showWarningMessage(`Claude session usage ~${Math.round(sessionPct)}%! Close to rate limit.`);
     } else if (sessionPct >= 80 && !notified80) {
         notified80 = true;
-        vscode.window.showInformationMessage(`Claude session usage ~${Math.round(sessionPct)}%. Pazi na potrošnju.`);
+        vscode.window.showInformationMessage(`Claude session usage ~${Math.round(sessionPct)}%. Watch your usage.`);
     }
     if (sessionPct < 10) { notified80 = false; notified95 = false; }
 
@@ -729,16 +729,16 @@ function updateStatusBar() {
     const sRem = Math.max(0, LIMITS.sessionCostLimit - windowData.session.cost);
     const wRem = Math.max(0, LIMITS.weeklyCostLimit - windowData.weekly.cost);
     const resetInfo = LIMITS.sessionResetAt
-        ? `Session reset: ${LIMITS.sessionResetAt.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' })} (za ${formatTimeRemaining(resetMs)})`
-        : 'Session reset: nepoznat (kalibriraj)';
+        ? `Session reset: ${LIMITS.sessionResetAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} (in ${formatTimeRemaining(resetMs)})`
+        : 'Session reset: unknown (calibrate)';
     const dom = dominantModel(sessionData);
     usageBarItem.tooltip = [
         `Session: ~${Math.round(sPct)}% ($${windowData.session.cost.toFixed(0)} / $${LIMITS.sessionCostLimit})`,
         `Weekly: ~${Math.round(wPct)}% ($${windowData.weekly.cost.toFixed(0)} / $${LIMITS.weeklyCostLimit})`,
         resetInfo,
-        `Preostalo: session ~$${sRem.toFixed(0)}, weekly ~$${wRem.toFixed(0)}`,
-        `Aktivnih sesija: ${activeSessions.size}${dom ? ' | dominant model: ' + dom : ''}`,
-        '', 'Klik za dashboard'
+        `Remaining: session ~$${sRem.toFixed(0)}, weekly ~$${wRem.toFixed(0)}`,
+        `Active sessions: ${activeSessions.size}${dom ? ' | dominant model: ' + dom : ''}`,
+        '', 'Click for dashboard'
     ].join('\n');
 
     if (sPct >= 95) usageBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
@@ -783,8 +783,8 @@ function buildDashboardHtml() {
     const sRemCost = Math.max(0, LIMITS.sessionCostLimit - windowData.session.cost);
     const wRemCost = Math.max(0, LIMITS.weeklyCostLimit - windowData.weekly.cost);
     const resetMs = getSessionResetIn();
-    const resetTimeStr = LIMITS.sessionResetAt ? LIMITS.sessionResetAt.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' }) : '?';
-    const resetCountdown = resetMs ? formatTimeRemaining(resetMs) : 'kalibriraj';
+    const resetTimeStr = LIMITS.sessionResetAt ? LIMITS.sessionResetAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '?';
+    const resetCountdown = resetMs ? formatTimeRemaining(resetMs) : 'calibrate';
     const wResetMs = getWeeklyResetIn();
 
     let estTimeToLimit = 'N/A';
@@ -803,14 +803,14 @@ function buildDashboardHtml() {
     }).join('');
 
     const totalRow = activeSessions.size > 1
-        ? `<tr class="total"><td>UKUPNO</td><td class="n">${sessionData.apiCalls}</td><td class="n">${fmt(totalInputDisplayTokens(sessionData))}</td><td class="n">${fmt(sessionData.outputTokens)}</td><td class="n g">$${sessionData.cost.toFixed(2)}</td></tr>`
+        ? `<tr class="total"><td>TOTAL</td><td class="n">${sessionData.apiCalls}</td><td class="n">${fmt(totalInputDisplayTokens(sessionData))}</td><td class="n">${fmt(sessionData.outputTokens)}</td><td class="n g">$${sessionData.cost.toFixed(2)}</td></tr>`
         : '';
 
     // Per-model breakdown rows
     const modelRows = Object.entries(sessionData.modelBreakdown)
         .sort((a, b) => b[1].cost - a[1].cost)
         .map(([k, mb]) => `<tr><td>${k}</td><td class="n">${mb.calls}</td><td class="n">${fmt(mb.input + mb.cache5m + mb.cache1h + mb.cacheRead)}</td><td class="n">${fmt(mb.output)}</td><td class="n g">$${mb.cost.toFixed(2)}</td></tr>`)
-        .join('') || '<tr><td colspan="5" class="cs">(nema aktivnih poziva)</td></tr>';
+        .join('') || '<tr><td colspan="5" class="cs">(no active calls)</td></tr>';
 
     const webSearchRow = sessionData.webSearches > 0
         ? `<tr><td>Web search</td><td class="n">${sessionData.webSearches}</td><td class="n g">$${(sessionData.webSearches * WEB_SEARCH_COST).toFixed(4)}</td></tr>`
@@ -843,23 +843,23 @@ th{color:var(--vscode-descriptionForeground);font-weight:600;font-size:.8em}.n{t
 .note{font-size:.75em;color:var(--vscode-descriptionForeground);margin-top:14px;padding:8px;border-left:3px solid var(--vscode-focusBorder)}
 </style></head><body>
 <h1>Claude Usage Dashboard</h1>
-<div class="sub">Max ($${LIMITS.monthlySubCost}/mj) | dominant: ${dom} | ${new Date().toLocaleTimeString('hr-HR')} | Auto-refresh 10s</div>
+<div class="sub">Max ($${LIMITS.monthlySubCost}/mo) | dominant: ${dom} | ${new Date().toLocaleTimeString('en-US')} | Auto-refresh 10s</div>
 
-<h2>Session (5h) — Reset: ${resetTimeStr} (za ${resetCountdown})</h2>
-${pBar(sPct, `${Math.round(sPct)}% (~$${windowData.session.cost.toFixed(2)})`, `~$${sRemCost.toFixed(2)} preostalo | Do limita: ${estTimeToLimit}`)}
+<h2>Session (5h) — Reset: ${resetTimeStr} (in ${resetCountdown})</h2>
+${pBar(sPct, `${Math.round(sPct)}% (~$${windowData.session.cost.toFixed(2)})`, `~$${sRemCost.toFixed(2)} remaining | Time to limit: ${estTimeToLimit}`)}
 
-<h2>Weekly — Reset: za ${formatTimeRemaining(wResetMs)}</h2>
-${pBar(wPct, `${Math.round(wPct)}% (~$${windowData.weekly.cost.toFixed(2)})`, `~$${wRemCost.toFixed(2)} preostalo`)}
+<h2>Weekly — Reset: in ${formatTimeRemaining(wResetMs)}</h2>
+${pBar(wPct, `${Math.round(wPct)}% (~$${windowData.weekly.cost.toFixed(2)})`, `~$${wRemCost.toFixed(2)} remaining`)}
 
 <div class="cards">
-    <div class="card"><div class="cl">Aktivne konverzacije (${activeSessions.size})</div><div class="cv b">${fmt(totalConvTokens)}</div><div class="cs">${sessionData.apiCalls} calls | $${sessionData.cost.toFixed(2)}</div></div>
-    <div class="card"><div class="cl">Brzina</div><div class="cv ${costPerHour > 100 ? 'r' : costPerHour > 50 ? 'y' : 'g'}">${tokPerMin > 0 ? fmt(Math.round(tokPerMin)) + '/min' : 'N/A'}</div><div class="cs">${costPerHour > 0 ? '$' + costPerHour.toFixed(2) + '/h' : ''}</div></div>
+    <div class="card"><div class="cl">Active conversations (${activeSessions.size})</div><div class="cv b">${fmt(totalConvTokens)}</div><div class="cs">${sessionData.apiCalls} calls | $${sessionData.cost.toFixed(2)}</div></div>
+    <div class="card"><div class="cl">Speed</div><div class="cv ${costPerHour > 100 ? 'r' : costPerHour > 50 ? 'y' : 'g'}">${tokPerMin > 0 ? fmt(Math.round(tokPerMin)) + '/min' : 'N/A'}</div><div class="cs">${costPerHour > 0 ? '$' + costPerHour.toFixed(2) + '/h' : ''}</div></div>
     <div class="card"><div class="cl">Session window</div><div class="cv">${fmt(totalTokens(windowData.session))}</div><div class="cs">${windowData.session.apiCalls} calls | $${windowData.session.cost.toFixed(2)}</div></div>
     <div class="card"><div class="cl">Weekly</div><div class="cv">${fmt(totalTokens(windowData.weekly))}</div><div class="cs">${windowData.weekly.apiCalls} calls | $${windowData.weekly.cost.toFixed(2)}</div></div>
 </div>
 
 <h2>Per-session breakdown</h2>
-<table><tr><th>Sesija</th><th class="n">Calls</th><th class="n">Input</th><th class="n">Output</th><th class="n">Cost</th></tr>
+<table><tr><th>Session</th><th class="n">Calls</th><th class="n">Input</th><th class="n">Output</th><th class="n">Cost</th></tr>
 ${sessionRows}${totalRow}</table>
 
 <h2>Per-model breakdown (current sessions)</h2>
@@ -867,18 +867,18 @@ ${sessionRows}${totalRow}</table>
 ${modelRows}</table>
 
 <h2>Token types</h2>
-<table><tr><th>Tip</th><th class="n">Tokeni</th><th class="n">Cost (procjena)</th></tr>
-<tr><td>Input (uncached)</td><td class="n">${sessionData.inputTokens.toLocaleString()}</td><td class="n cs">vidi per-model</td></tr>
-<tr><td>Output</td><td class="n">${sessionData.outputTokens.toLocaleString()}</td><td class="n cs">vidi per-model</td></tr>
-<tr><td>Cache write (5m)</td><td class="n">${sessionData.cache5mTokens.toLocaleString()}</td><td class="n cs">vidi per-model</td></tr>
-<tr><td>Cache write (1h)</td><td class="n">${sessionData.cache1hTokens.toLocaleString()}</td><td class="n cs">2× cijena 5m</td></tr>
-<tr><td>Cache read</td><td class="n">${sessionData.cacheReadTokens.toLocaleString()}</td><td class="n cs">~10% cijene inputa</td></tr>
+<table><tr><th>Type</th><th class="n">Tokens</th><th class="n">Cost (est.)</th></tr>
+<tr><td>Input (uncached)</td><td class="n">${sessionData.inputTokens.toLocaleString()}</td><td class="n cs">see per-model</td></tr>
+<tr><td>Output</td><td class="n">${sessionData.outputTokens.toLocaleString()}</td><td class="n cs">see per-model</td></tr>
+<tr><td>Cache write (5m)</td><td class="n">${sessionData.cache5mTokens.toLocaleString()}</td><td class="n cs">see per-model</td></tr>
+<tr><td>Cache write (1h)</td><td class="n">${sessionData.cache1hTokens.toLocaleString()}</td><td class="n cs">2× the 5m price</td></tr>
+<tr><td>Cache read</td><td class="n">${sessionData.cacheReadTokens.toLocaleString()}</td><td class="n cs">~10% of input price</td></tr>
 ${webSearchRow}</table>
 
-<div class="sav"><div>Uštedjeno vs API</div><div class="big">$${totalSaved > 0 ? totalSaved.toFixed(0) : '0'}</div>
-<div class="cs">API ekv: $${allTimeCost.toFixed(2)} | Sub: $${LIMITS.monthlySubCost}/mj</div></div>
+<div class="sav"><div>Saved vs API</div><div class="big">$${totalSaved > 0 ? totalSaved.toFixed(0) : '0'}</div>
+<div class="cs">API equiv: $${allTimeCost.toFixed(2)} | Sub: $${LIMITS.monthlySubCost}/mo</div></div>
 
-<div class="note">Per-model pricing (Opus/Sonnet/Haiku 4.x + legacy 3.x), 5m vs 1h cache razlika, 1M context tier 2× detekcija (>200K tokena po pozivu), web_search billing ($10/1000). <b>Ctrl+Shift+P → Claude Tokens: Calibrate</b> za session/weekly % limit.</div>
+<div class="note">Per-model pricing (Opus/Sonnet/Haiku 4.x + legacy 3.x), 5m vs 1h cache distinction, 1M context tier 2× detection (>200K tokens per call), web_search billing ($10/1000). <b>Ctrl+Shift+P → Claude Tokens: Calibrate</b> for session/weekly % limit.</div>
 </body></html>`;
 }
 
@@ -888,7 +888,7 @@ ${webSearchRow}</table>
 
 function showAllSessions() {
     const projectsDir = getProjectsDir();
-    if (!fs.existsSync(projectsDir)) { vscode.window.showInformationMessage('Nema sesija.'); return; }
+    if (!fs.existsSync(projectsDir)) { vscode.window.showInformationMessage('No sessions.'); return; }
 
     const sessions = [];
     try {
@@ -915,12 +915,12 @@ function showAllSessions() {
         const tokens = totalTokens(s);
         totalAllTokens += tokens;
 
-        const dayKey = s.date.toLocaleDateString('hr-HR');
+        const dayKey = s.date.toLocaleDateString('en-US');
         if (!dailyTotals.has(dayKey)) dailyTotals.set(dayKey, { cost: 0, tokens: 0, calls: 0, sessions: 0 });
         const day = dailyTotals.get(dayKey);
         day.cost += s.cost; day.tokens += tokens; day.calls += s.apiCalls; day.sessions++;
 
-        const dateStr = dayKey + ' ' + s.date.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = dayKey + ' ' + s.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         const hl = s.file === sessionData.sessionId ? ' class="hl"' : '';
         const dom = dominantModel(s) || '?';
         rows += `<tr${hl}><td>${dateStr}</td><td>${s.project.replace(/^c--/, '').replace(/-/g, '/')}</td><td>${dom}</td><td class="n">${s.apiCalls}</td><td class="n">${fmt(totalInputDisplayTokens(s))}</td><td class="n">${fmt(s.outputTokens)}</td><td class="n g">$${s.cost.toFixed(2)}</td></tr>`;
@@ -942,13 +942,13 @@ th{color:var(--vscode-descriptionForeground);font-weight:600;position:sticky;top
 .n{text-align:right;font-variant-numeric:tabular-nums}.g{color:var(--vscode-charts-green)}.hl{background:var(--vscode-editor-selectionBackground)}
 </style></head><body>
 <h1>Claude Token Usage</h1>
-<div class="sum"><span class="big g">$${totalAllCost.toFixed(2)}</span> ukupno | ${fmt(totalAllTokens)} tokena | ${sessions.length} sesija</div>
+<div class="sum"><span class="big g">$${totalAllCost.toFixed(2)}</span> total | ${fmt(totalAllTokens)} tokens | ${sessions.length} sessions</div>
 
-<h2>Po danima</h2>
-<table><tr><th>Dan</th><th class="n">Sesija</th><th class="n">Calls</th><th class="n">Tokeni</th><th class="n">Cost</th></tr>${dailyRows}</table>
+<h2>By day</h2>
+<table><tr><th>Day</th><th class="n">Sessions</th><th class="n">Calls</th><th class="n">Tokens</th><th class="n">Cost</th></tr>${dailyRows}</table>
 
-<h2>Sve sesije</h2>
-<table><tr><th>Datum</th><th>Projekt</th><th>Model</th><th class="n">Calls</th><th class="n">Input</th><th class="n">Output</th><th class="n">Cost</th></tr>${rows}</table>
+<h2>All sessions</h2>
+<table><tr><th>Date</th><th>Project</th><th>Model</th><th class="n">Calls</th><th class="n">Input</th><th class="n">Output</th><th class="n">Cost</th></tr>${rows}</table>
 </body></html>`;
 }
 
@@ -996,7 +996,7 @@ async function exportToCsv() {
     if (uri) {
         const header = 'Date,Project,SessionId,DominantModel,ApiCalls,Input,Output,Cache5m,Cache1h,CacheRead,WebSearches,TotalTokens,ApiCost\n';
         fs.writeFileSync(uri.fsPath, header + sessions.join('\n'), 'utf8');
-        vscode.window.showInformationMessage(`Exportano ${sessions.length} sesija u ${uri.fsPath}`);
+        vscode.window.showInformationMessage(`Exported ${sessions.length} sessions to ${uri.fsPath}`);
     }
 }
 
