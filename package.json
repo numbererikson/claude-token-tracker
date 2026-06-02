@@ -4,6 +4,15 @@
   "description": "Tracks Claude Code token usage with accurate per-model pricing (Opus/Sonnet/Haiku 4.x), 5m/1h cache tier, 1M context doubling, web_search billing",
   "version": "0.1.0",
   "publisher": "shinobi-apps",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/numbererikson/claude-token-tracker.git"
+  },
+  "homepage": "https://github.com/numbererikson/claude-token-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/numbererikson/claude-token-tracker/issues"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
