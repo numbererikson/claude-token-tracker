@@ -1,0 +1,17 @@
+# Build artifacts (publish via GitHub Releases, not git)
+*.vsix
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~

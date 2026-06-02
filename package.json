@@ -1,0 +1,41 @@
+{
+  "name": "claude-token-tracker",
+  "displayName": "Claude Token Tracker",
+  "description": "Tracks Claude Code token usage with accurate per-model pricing (Opus/Sonnet/Haiku 4.x), 5m/1h cache tier, 1M context doubling, web_search billing",
+  "version": "0.1.0",
+  "publisher": "shinobiapps",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeTokenTracker.showDashboard",
+        "title": "Claude Tokens: Dashboard"
+      },
+      {
+        "command": "claudeTokenTracker.showHistory",
+        "title": "Claude Tokens: All Sessions"
+      },
+      {
+        "command": "claudeTokenTracker.calibrate",
+        "title": "Claude Tokens: Calibrate"
+      },
+      {
+        "command": "claudeTokenTracker.exportCsv",
+        "title": "Claude Tokens: Export CSV"
+      },
+      {
+        "command": "claudeTokenTracker.refresh",
+        "title": "Claude Tokens: Refresh"
+      }
+    ]
+  }
+}
